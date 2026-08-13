@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mileage Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0f1115;
+    --surface: #181b22;
+    --surface-2: #1f232c;
+    --border: #2a2f3a;
+    --text: #eef1f6;
+    --muted: #8b93a3;
+    --accent: #4ade80;
+    --accent-2: #38bdf8;
+    --danger: #f87171;
+    --radius: 14px;
+    --shadow: 0 8px 30px rgba(0,0,0,.35);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Inter", system-ui, sans-serif;
+    background: radial-gradient(1200px 600px at 80% -10%, #1a2230 0%, var(--bg) 55%);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 32px 20px 64px; }
+
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+  .logo {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center; font-size: 24px;
+    box-shadow: var(--shadow);
+  }
+  h1 { font-size: 1.5rem; font-weight: 800; margin: 0; letter-spacing: -.02em; }
+  header p { margin: 2px 0 0; color: var(--muted); font-size: .9rem; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 26px; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 18px;
+  }
+  .stat .label { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  .stat .value { font-size: 1.55rem; font-weight: 800; margin-top: 6px; letter-spacing: -.02em; }
+  .stat .value span { font-size: .85rem; color: var(--muted); font-weight: 600; }
+
+  /* Card / form */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow);
+    margin-bottom: 26px;
+  }
+  .card h2 { margin: 0 0 16px; font-size: 1.05rem; font-weight: 700; }
+  form { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; align-items: end; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.wide { grid-column: span 2; }
+  label { font-size: .74rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  input {
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 10px 12px; font-size: .95rem; font-family: inherit;
+    transition: border-color .15s, box-shadow .15s;
+    width: 100%;
+  }
+  input:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(56,189,248,.18); }
+  button.primary {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, var(--accent), #22c55e);
+    color: #06240f; border: none; border-radius: 10px; padding: 12px 16px;
+    font-weight: 700; font-size: .95rem; cursor: pointer; font-family: inherit;
+    transition: transform .1s, filter .15s;
+  }
+  button.primary:hover { filter: brightness(1.05); }
+  button.primary:active { transform: translateY(1px); }
+
+  /* Table */
+  .list-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .list-head h2 { margin: 0; font-size: 1.05rem; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; padding: 0 12px 10px; }
+  th.num, td.num { text-align: right; }
+  td { padding: 13px 12px; border-top: 1px solid var(--border); font-size: .92rem; }
+  tbody tr:hover { background: rgba(255,255,255,.02); }
+  .mpg-pill {
+    display: inline-block; padding: 3px 9px; border-radius: 999px;
+    font-weight: 700; font-size: .82rem;
+    background: rgba(74,222,128,.14); color: var(--accent);
+  }
+  .muted { color: var(--muted); }
+  .del {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 1rem;
+    transition: all .15s;
+  }
+  .del:hover { border-color: var(--danger); color: var(--danger); background: rgba(248,113,113,.08); }
+
+  .empty { text-align: center; padding: 46px 20px; color: var(--muted); }
+  .empty .big { font-size: 2.4rem; margin-bottom: 8px; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120%);
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+    padding: 12px 18px; border-radius: 10px; box-shadow: var(--shadow); font-size: .9rem;
+    transition: transform .3s cubic-bezier(.2,.9,.3,1);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.err { border-color: var(--danger); }
+
+  @media (max-width: 760px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    form { grid-template-columns: repeat(2, 1fr); }
+    .field.wide { grid-column: span 2; }
+    .hide-sm { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">⛽</div>
+    <div>
+      <h1>Mileage Tracker</h1>
+      <p>Log every fill-up, know your real MPG.</p>
+    </div>
+  </header>
+
+  <section class="stats" id="stats"></section>
+
+  <section class="card">
+    <h2>Add a fill-up</h2>
+    <form id="form">
+      <div class="field">
+        <label for="date">Date</label>
+        <input type="date" id="date" required />
+      </div>
+      <div class="field">
+        <label for="odometer">Odometer (mi)</label>
+        <input type="number" id="odometer" step="0.1" min="0" placeholder="42150" required />
+      </div>
+      <div class="field">
+        <label for="gallons">Gallons</label>
+        <input type="number" id="gallons" step="0.001" min="0" placeholder="11.4" required />
+      </div>
+      <div class="field">
+        <label for="price">Total cost ($)</label>
+        <input type="number" id="price" step="0.01" min="0" placeholder="41.20" />
+      </div>
+      <div class="field">
+        <label for="note">Note</label>
+        <input type="text" id="note" placeholder="Shell, hwy trip…" />
+      </div>
+      <button class="primary" type="submit">Add fill-up</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <div class="list-head"><h2>History</h2><span class="muted" id="count"></span></div>
+    <div id="tableWrap"></div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const fmt = (n, d = 0) => n == null ? "—" : Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const money = (n) => n == null ? "—" : "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+let toastTimer;
+function toast(msg, isErr = false) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.className = "toast show" + (isErr ? " err" : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (t.className = "toast"), 2600);
+}
+
+function renderStats(s) {
+  const cards = [
+    { label: "Fill-ups", value: fmt(s.count), unit: "" },
+    { label: "Avg MPG", value: s.avgMpg == null ? "—" : fmt(s.avgMpg, 1), unit: "mpg" },
+    { label: "Miles tracked", value: fmt(s.totalMiles), unit: "mi" },
+    { label: "Cost / mile", value: s.costPerMile == null ? "—" : money(s.costPerMile).replace("$", "$"), unit: "" },
+  ];
+  $("stats").innerHTML = cards.map(c => `
+    <div class="stat">
+      <div class="label">${c.label}</div>
+      <div class="value">${c.value} ${c.unit ? `<span>${c.unit}</span>` : ""}</div>
+    </div>`).join("");
+}
+
+function renderTable(rows) {
+  $("count").textContent = rows.length ? `${rows.length} logged` : "";
+  if (!rows.length) {
+    $("tableWrap").innerHTML = `
+      <div class="empty">
+        <div class="big">🚗</div>
+        <div>No fill-ups yet. Add your first one above to start tracking MPG.</div>
+      </div>`;
+    return;
+  }
+  $("tableWrap").innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th class="num">Odometer</th>
+          <th class="num hide-sm">Gallons</th>
+          <th class="num">MPG</th>
+          <th class="num hide-sm">Cost</th>
+          <th class="hide-sm">Note</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(r => `
+          <tr>
+            <td>${r.date}</td>
+            <td class="num">${fmt(r.odometer, 0)}</td>
+            <td class="num hide-sm">${fmt(r.gallons, 2)}</td>
+            <td class="num">${r.mpg == null ? '<span class="muted">—</span>' : `<span class="mpg-pill">${fmt(r.mpg, 1)}</span>`}</td>
+            <td class="num hide-sm">${r.price ? money(r.price) : '<span class="muted">—</span>'}</td>
+            <td class="hide-sm muted">${r.note ? escapeHtml(r.note) : ""}</td>
+            <td class="num"><button class="del" title="Delete" data-id="${r.id}">×</button></td>
+          </tr>`).join("")}
+      </tbody>
+    </table>`;
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+async function load() {
+  const res = await fetch("/api/fillups");
+  const data = await res.json();
+  renderStats(data.stats);
+  renderTable(data.fillups);
+}
+
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const body = {
+    date: $("date").value,
+    odometer: parseFloat($("odometer").value),
+    gallons: parseFloat($("gallons").value),
+    price: parseFloat($("price").value) || 0,
+    note: $("note").value,
+  };
+  const res = await fetch("/api/fillups", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) return toast(data.error || "Something went wrong", true);
+  renderStats(data.stats);
+  renderTable(data.fillups);
+  e.target.reset();
+  $("date").value = new Date().toISOString().slice(0, 10);
+  toast("Fill-up added ✓");
+});
+
+$("tableWrap").addEventListener("click", async (e) => {
+  const btn = e.target.closest(".del");
+  if (!btn) return;
+  const res = await fetch("/api/fillups/" + btn.dataset.id, { method: "DELETE" });
+  const data = await res.json();
+  renderStats(data.stats);
+  renderTable(data.fillups);
+  toast("Deleted");
+});
+
+// Default the date field to today.
+$("date").value = new Date().toISOString().slice(0, 10);
+load();
+</script>
+</body>
+</html>
