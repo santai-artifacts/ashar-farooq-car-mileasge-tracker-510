@@ -2,6 +2,5 @@
   "name": "mileage-tracker",
   "version": "1.0.0",
   "scripts": {
-    "start": "bun run index.ts"
   }
 }
